@@ -6,12 +6,12 @@ def main():
     try:
         extracted_data = loader.load_data()
         transform=Transform(extracted_data)
-        
         transformed_data=transform.add_column_name()
         transformed_data=transform.drop_column_name()
         event_id=20113
-        transformed_data=transform.changing(str(event_id))
+        transformed_data=transform.find_rows_by_event_id(str(event_id))
         transformed_data=transform.expand_product_list(transformed_data)
+        transformed_data=transform.produce_product_info_df(transformed_data)
         print(transformed_data)
     except Exception as e:
         print(e)
