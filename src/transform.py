@@ -44,3 +44,13 @@ class Transform:
 
         product_info_df = pd.DataFrame(self.product_list)
         return product_info_df
+    
+    def impression_count(self, product_df):
+        product_df["Impression_count"] = pd.to_numeric(product_df["Impression_count"], downcast="float")
+        impression_count = (
+            product_df.groupby("Domain_name")["Impression_count"]
+            .sum()
+        )
+        
+        return impression_count
+ 
