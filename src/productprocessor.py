@@ -1,27 +1,25 @@
 import pandas as pd
-import gc
+ 
 class ProductProcessor:
-    def __init__(self, chunk_size=150000):
-        self.chunk_size = chunk_size
-
-    def make_new_records(self, row):
+    def __init__(self):
+        self.product_list = []
+ 
+    def make_new_records(self, arr, url):
+        product_dict = {"Dealer_Id": '', "Ad_Id": '', "Impression_count": '', 'Domain_name': '', "Product_data": ''}
+ 
         try:
-            arr = row["Post-Product-List"].split(';')
-            return {
-                "Dealer_Id": arr[0],
-                "Ad_Id": arr[1],
-                "Impression_count": arr[4].split('|')[0].split('=')[-1],
-                "Domain_name": row["URL"].split('/')[2].split('.')[1],
-                "Product_data": "|".join(arr[4].split('|')[1:]) + ";" + ";".join(arr[5:])
-            }
-        except Exception:
-            return None
-
+            product_dict['Domain_name'] = url.split('/')[2].split('.')[1]
+            product_dict['Dealer_Id'] = arr[0]
+            product_dict['Ad_Id'] = arr[1]
+            product_dict['Impression_count'] = arr[4].split('|')[0].split('=')[-1]
+            product_dict['Product_data'] = "|".join(arr[4].split('|')[1:]) + ";" + ";".join(arr[5:])
+ 
+            self.product_list.append(product_dict)
+        except Exception as e:
+            pass  
+ 
     def produce_product_info_df(self, df):
-        df["Processed_Data"] = df.apply(self.make_new_records, axis=1)
-        processed_chunk = pd.DataFrame(df["Processed_Data"].dropna().tolist())
-        del df 
-        gc.collect()
-        return processed_chunk
-
-
+        df["Post-Product-List"] = df["Post-Product-List"].apply(lambda x: x.split(';'))
+        df.apply(lambda x: self.make_new_records(x["Post-Product-List"], x["URL"]), axis=1)
+        product_info_df = pd.DataFrame(self.product_list)
+        return product_info_df
